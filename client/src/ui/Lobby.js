@@ -138,7 +138,11 @@ export class Lobby {
         const label = document.createElement('div');
         label.textContent = m.name;
         card.appendChild(label);
-        card.onclick = () => { if (isHost) net.send(C2S.SET_MAP, { mapId: m.id }); };
+        // re-check host status at click time, not at card-creation time --
+        // this DOM is only built once, but who's host can change later
+        card.onclick = () => {
+          if (this.state?.hostId === this.selfId) net.send(C2S.SET_MAP, { mapId: m.id });
+        };
         grid.appendChild(card);
       }
     }

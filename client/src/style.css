@@ -103,7 +103,9 @@ input, select {
 .switch-team { width: 100%; font-size: 12px; padding: 6px 10px; }
 .map-col h3 { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); margin: 0 0 10px; }
 .map-grid { display: flex; flex-direction: column; gap: 10px; }
-.map-card { border: 1px solid var(--border); padding: 6px; cursor: pointer; text-align: center; font-size: 12px; }
+/* pointer-events: auto is required here -- #ui-root defaults to none and
+   only re-enables it for a/button/input/select, not plain divs like this */
+.map-card { border: 1px solid var(--border); padding: 6px; cursor: pointer; text-align: center; font-size: 12px; pointer-events: auto; }
 .map-card.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .map-card.locked { cursor: default; opacity: 0.85; }
 .map-card canvas { display: block; width: 100%; height: auto; margin-bottom: 4px; }
