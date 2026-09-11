@@ -1,0 +1,16 @@
+{
+  "name": "crl",
+  "private": true,
+  "version": "0.1.0",
+  "description": "CRL - original browser-based multiplayer tactical FPS",
+  "workspaces": [
+    "shared",
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev -w server",
+    "dev:client": "npm run dev -w client",
+    "build:client": "npm run build -w client"
+  }
+}
