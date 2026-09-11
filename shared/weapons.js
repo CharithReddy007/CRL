@@ -147,3 +147,18 @@ export function damageAtRange(weapon, distance) {
   }
   return dmg;
 }
+
+// Resolves a single hit into final HP/armor damage. Armor reduces damage by
+// its absorb% while it holds out, then damage passes through unmitigated.
+export function computeDamage(weapon, distance, zone, armorValue = 0, absorbPct = 0) {
+  const mult = zone === 'head' ? weapon.headMult : zone === 'limb' ? weapon.limbMult : 1;
+  let dmg = damageAtRange(weapon, distance) * mult;
+  if (weapon.oneShotBody && zone !== 'limb') dmg = Math.max(dmg, 150);
+  let armorDamage = 0;
+  if (armorValue > 0 && absorbPct > 0) {
+    const reduction = dmg * absorbPct;
+    armorDamage = Math.min(armorValue, reduction);
+    dmg -= armorDamage;
+  }
+  return { damage: Math.max(0, Math.round(dmg)), armorDamage: Math.round(armorDamage) };
+}
