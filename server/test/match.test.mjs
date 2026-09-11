@@ -1,5 +1,5 @@
 import { Match } from '../src/Match.js';
-import { IRON_YARD } from '../../shared/maps/index.js';
+import { IRON_YARD, MAPLE_HOLLOW } from '../../shared/maps/index.js';
 import { TICK_RATE, TEAM_A, TEAM_B, ROUND_PHASE, START_CREDITS, CREDIT_ROUND_WIN, WEAPONS } from '../../shared/index.js';
 
 let failures = 0;
@@ -80,6 +80,20 @@ const beforeAttack = match.attackTeam;
 match.proceedAfterRoundEnd();
 assert(match.attackTeam !== beforeAttack, 'teams swap sides after round 6');
 assert(match.round === 7, 'round advanced to 7 after swap');
+
+// ---- nearestSite axis regression ----
+// nearestSite() must compare a player's (x, z) ground position against a
+// site's (x, z) center -- a prior bug compared pos[1] (height) against the
+// site's z instead of pos[2], so plant/defuse silently failed at any site
+// whose z coordinate wasn't coincidentally close to 0. Iron Yard's own
+// sites happen to sit at z=2, which is small enough that the bug still
+// passed there and went unnoticed; Maple Hollow's site A (z=-8) does not.
+{
+  const mhMatch = new Match(mockRoom, MAPLE_HOLLOW);
+  const mhSite = MAPLE_HOLLOW.sites.find((s) => s.siteId === 'A');
+  const onSite = mhMatch.nearestSite([mhSite.center[0], 3, mhSite.center[1]]);
+  assert(onSite && onSite.siteId === 'A', 'nearestSite compares ground (x,z), not (x,height)');
+}
 
 // ---- Plant / detonation flow ----
 match.round = 8; match.phase = ROUND_PHASE.COMBAT; match.phaseEndsAtTick = match.tick + 100000;

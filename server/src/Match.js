@@ -299,7 +299,7 @@ export class Match {
   // ---- Core / kill helpers ----
   nearestSite(pos) {
     for (const site of this.map.sites) {
-      const dx = pos[0] - site.center[0], dz = pos[1] - site.center[1];
+      const dx = pos[0] - site.center[0], dz = pos[2] - site.center[1];
       if (Math.hypot(dx, dz) <= site.radius && Math.abs(pos[1] - site.y) <= site.yTolerance) return site;
     }
     return null;

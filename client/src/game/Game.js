@@ -5,6 +5,7 @@ import { Controller } from './Controller.js';
 import { RemotePlayers } from './RemotePlayers.js';
 import { WeaponsView, FireGate } from './Weapons.js';
 import { Effects } from './Effects.js';
+import { CoreView } from './CoreView.js';
 import { Minimap } from './Minimap.js';
 import { audio } from './AudioFX.js';
 import { net } from '../net.js';
@@ -39,6 +40,7 @@ export class Game {
     });
 
     this.effects = new Effects(this.scene);
+    this.coreView = new CoreView(this.scene);
     this.mapData = null;
     this.mapGroup = null;
     this.solids = [];
@@ -374,6 +376,7 @@ export class Game {
     this.weaponsView.update(dt, moving);
     this.remotePlayers?.update(dt);
     this.effects.update(dt);
+    this.coreView.update(this.latestCore, this.players, this.selfId, this.controller.moveState?.pos, dt);
 
     this.composer.render();
     requestAnimationFrame((t2) => this.loop(t2));
