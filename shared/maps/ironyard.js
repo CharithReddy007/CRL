@@ -8,14 +8,14 @@
 // Elevated flank: a catwalk at y=6.4 (clears the 6m walls below) runs from the
 // spawn-roof staircase, east across Mid Yard, then south and down inside
 // Site A's open-top footprint — a true aerial flank route.
-import { box, wallSeg, floor, crate, container, pillar, stairs, stairsRise, siteZone, spawnPoint, callout } from '../mapkit.js';
+import { box, wallSeg, floor, groundPlane, crate, container, pillar, stairs, stairsRise, siteZone, spawnPoint, callout } from '../mapkit.js';
 
 const g = [];
 const push = (...items) => { for (const it of items) g.push(it); };
 const CW_Y = 6.4; // catwalk walking height (wall tops are at y=6)
 
 // ---- Ground ----
-push(floor(0, 0, 0, 92, 152, 'ground'));
+push(groundPlane(0, 0, 0, 92, 152, 'ground'));
 
 // ---- Attacker Spawn (south, warehouse shell) ----
 push(floor(0, 0.01, -63, 60, 18, 'spawn_pad', false));
@@ -100,6 +100,15 @@ push(wallSeg(-25, 37, -25, 55, 6, 0, 1, 'wall'));
 push(wallSeg(25, 37, 25, 55, 6, 0, 1, 'wall'));
 push(wallSeg(-25, 37, -4, 37, 6, 0, 1, 'wall'));
 push(wallSeg(4, 37, 25, 37, 6, 0, 1, 'wall'));
+
+// Full perimeter enclosure -- the walls above cover each room/yard's own
+// boundary but leave gaps at the declared map bounds' outer edges (e.g.
+// diagonally past a corner), letting a player walk off the playable area
+// into the void. This closes that off without touching existing geometry.
+push(wallSeg(-46, -73, 46, -73, 6, 0, 1, 'wall'));
+push(wallSeg(-46, 56, 46, 56, 6, 0, 1, 'wall'));
+push(wallSeg(-46, -73, -46, 56, 6, 0, 1, 'wall'));
+push(wallSeg(46, -73, 46, 56, 6, 0, 1, 'wall'));
 
 export const IRON_YARD = {
   id: 'iron_yard',

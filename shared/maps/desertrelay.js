@@ -6,7 +6,7 @@
 //   Z -18.. +16 Site row: Site A Communications Core (west) / Site B Solar Array (east)
 //   Z +16..+36  Rotation trenches
 //   Z +36..+58  Defender Spawn
-import { box, wallSeg, floor, crate, pillar, stairsRise, siteZone, spawnPoint, callout } from '../mapkit.js';
+import { box, wallSeg, floor, groundPlane, crate, pillar, stairsRise, siteZone, spawnPoint, callout } from '../mapkit.js';
 
 const g = [];
 const push = (...items) => { for (const it of items) g.push(it); };
@@ -14,8 +14,8 @@ const TUNNEL_Y = -3.5;
 
 // base ground, tiled around the tunnel corridor (x -41..-35, z -59..-9) so
 // it's a real underground passage rather than covered by a solid ceiling
-push(floor(-48, 0, -10, 14, 150, 'sand')); // west of tunnel
-push(floor(10, 0, -10, 90, 150, 'sand')); // east of tunnel
+push(groundPlane(-48, 0, -10, 14, 150, 'sand')); // west of tunnel
+push(groundPlane(10, 0, -10, 90, 150, 'sand')); // east of tunnel
 push(floor(-38, 0, 27, 6, 76, 'sand')); // north of tunnel (within its x-range), overlaps stair top at z=-10
 push(floor(-38, 0, -71, 6, 28, 'sand')); // south of tunnel (within its x-range), overlaps stair top at z=-58
 
@@ -40,7 +40,7 @@ push(pillar(0, -46, 11, 1, 'radar_mast'));
 push(box(0, 8, -46, 8, 0.4, 0.4, 'radar_dish', false));
 push(box(8, 1.2, -24, 5, 2.4, 5, 'bunker_small', true)); push(box(-10, 1.2, -46, 5, 2.4, 5, 'bunker_small', true));
 // tunnel body, resurfacing inside Site A's back interior
-push(floor(-38, TUNNEL_Y - 0.01, -36, 6, 30, 'tunnel_floor'));
+push(floor(-38, TUNNEL_Y - 0.01, -34, 6, 46, 'tunnel_floor'));
 push(wallSeg(-41, -50, -41, -22, 4, TUNNEL_Y, 0.6, 'tunnel_wall'));
 push(wallSeg(-35, -50, -35, -22, 4, TUNNEL_Y, 0.6, 'tunnel_wall'));
 const tunnelExit = stairsRise(-38, -24, 0, 1, -TUNNEL_Y, 14, 4, 'stair_down', TUNNEL_Y);
@@ -82,6 +82,12 @@ push(wallSeg(-24, 38, -24, 58, 6, 0, 1, 'wall'));
 push(wallSeg(24, 38, 24, 58, 6, 0, 1, 'wall'));
 push(wallSeg(-24, 38, -6, 38, 6, 0, 1, 'wall'));
 push(wallSeg(6, 38, 24, 38, 6, 0, 1, 'wall'));
+
+// Full perimeter enclosure -- see the matching comment in ironyard.js.
+push(wallSeg(-55, -82, 55, -82, 6, 0, 1, 'wall'));
+push(wallSeg(-55, 60, 55, 60, 6, 0, 1, 'wall'));
+push(wallSeg(-55, -82, -55, 60, 6, 0, 1, 'wall'));
+push(wallSeg(55, -82, 55, 60, 6, 0, 1, 'wall'));
 
 export const DESERT_RELAY = {
   id: 'desert_relay',

@@ -5,7 +5,7 @@
 //   Z -14.. +12 Site row: Site A Transit Hub (underground, west) / Site B Skyline Plaza (rooftop, east)
 //   Z +12..+30  Back streets (rotation)
 //   Z +30..+50  Defender Spawn
-import { box, wallSeg, floor, crate, pillar, stairs, stairsRise, siteZone, spawnPoint, callout } from '../mapkit.js';
+import { box, wallSeg, floor, groundPlane, crate, pillar, stairs, stairsRise, siteZone, spawnPoint, callout } from '../mapkit.js';
 
 const g = [];
 const push = (...items) => { for (const it of items) g.push(it); };
@@ -15,10 +15,10 @@ const PLATFORM_Y = -4.0; // Transit Hub underground platform depth
 
 // base ground, tiled around the Transit Hub pit (x -38..-10, z -6..24) so the
 // underground station is a real hole rather than covered by a solid ceiling
-push(floor(-40, 0, -10, 4, 130, 'ground')); // west strip
-push(floor(16, 0, -10, 52, 130, 'ground')); // east strip
-push(floor(-24, 0, -40.5, 28, 69, 'ground')); // south strip (of pit's x-range)
-push(floor(-24, 0, 39.5, 28, 31, 'ground')); // north strip (of pit's x-range)
+push(groundPlane(-40, 0, -10, 4, 130, 'ground')); // west strip
+push(groundPlane(16, 0, -10, 52, 130, 'ground')); // east strip
+push(groundPlane(-24, 0, -40.5, 28, 69, 'ground')); // south strip (of pit's x-range)
+push(groundPlane(-24, 0, 39.5, 28, 31, 'ground')); // north strip (of pit's x-range)
 
 // ---- Attacker Spawn ----
 push(floor(0, 0.01, -58, 44, 16, 'spawn_pad', false));
@@ -108,6 +108,12 @@ push(wallSeg(-20, 37, -20, 53, 6, 0, 1, 'wall'));
 push(wallSeg(20, 37, 20, 53, 6, 0, 1, 'wall'));
 push(wallSeg(-20, 37, -6, 37, 6, 0, 1, 'wall'));
 push(wallSeg(6, 37, 20, 37, 6, 0, 1, 'wall'));
+
+// Full perimeter enclosure -- see the matching comment in ironyard.js.
+push(wallSeg(-42, -68, 42, -68, 6, 0, 1, 'wall'));
+push(wallSeg(-42, 55, 42, 55, 6, 0, 1, 'wall'));
+push(wallSeg(-42, -68, -42, 55, 6, 0, 1, 'wall'));
+push(wallSeg(42, -68, 42, 55, 6, 0, 1, 'wall'));
 
 export const NEON_DISTRICT = {
   id: 'neon_district',

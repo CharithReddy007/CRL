@@ -99,6 +99,13 @@ export function simulateMove(state, input, dt, geometry) {
   vel[2] = wishZ * speed;
 
   vel[1] -= GRAVITY * dt;
+  // Terminal velocity: collision is only checked at each tick's end position
+  // (not swept), so an unbounded fall speed could cross a thin floor
+  // collider within a single tick and tunnel through it undetected. Capping
+  // the per-tick fall distance below the thinnest collider in any map's
+  // geometry (0.3) guarantees the end position still lands inside it.
+  const MAX_FALL_SPEED = 8;
+  if (vel[1] < -MAX_FALL_SPEED) vel[1] = -MAX_FALL_SPEED;
   if (grounded && input.jump) {
     vel[1] = JUMP_SPEED;
     grounded = false;
