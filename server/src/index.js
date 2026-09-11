@@ -17,8 +17,24 @@ app.get('*', (req, res, next) => {
   res.sendFile(path.join(clientDist, 'index.html'), (err) => { if (err) next(); });
 });
 
+// Optional origin allowlist for split deployments (server on one host,
+// client on another). Comma-separated; unset/empty means allow any origin
+// (fine for local dev or a single combined server+client deployment).
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGIN || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
 const server = http.createServer(app);
-const wss = new WebSocketServer({ server, path: '/ws' });
+const wss = new WebSocketServer({
+  server,
+  path: '/ws',
+  verifyClient: (info, cb) => {
+    if (ALLOWED_ORIGINS.length === 0) return cb(true);
+    if (ALLOWED_ORIGINS.includes(info.origin)) return cb(true);
+    cb(false, 403, 'Forbidden origin');
+  },
+});
 const rooms = new RoomManager();
 
 let nextId = 1;

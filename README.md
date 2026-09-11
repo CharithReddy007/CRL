@@ -83,6 +83,12 @@ server's WebSocket endpoint, since it can no longer assume same-origin:
   Set the `VITE_WS_URL` environment variable in the Vercel project to your
   Render service's WebSocket URL, e.g. `wss://your-service.onrender.com/ws`
   (note `wss://`, not `https://`, and the `/ws` path), then redeploy.
+- Optionally, lock the Render backend down to only accept connections from
+  your Vercel frontend by setting `ALLOWED_ORIGIN` on the Render service to
+  your Vercel URL (e.g. `https://your-app.vercel.app`, comma-separate
+  multiple origins, no trailing slash). Leave it unset to allow any origin,
+  which is fine for local dev or if you don't mind others pointing their own
+  frontend at your server.
 
 ## Project layout
 
