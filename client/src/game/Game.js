@@ -21,8 +21,9 @@ const BASE_FOV = 90;
 
 export class Game {
   constructor(root) {
-    const { renderer, scene, camera, canvas } = createScene();
+    const { renderer, scene, camera, canvas, composer } = createScene();
     this.renderer = renderer;
+    this.composer = composer;
     this.scene = scene;
     this.camera = camera;
     this.canvas = canvas;
@@ -367,7 +368,7 @@ export class Game {
     this.remotePlayers?.update(dt);
     this.effects.update(dt);
 
-    this.renderer.render(this.scene, this.camera);
+    this.composer.render();
     requestAnimationFrame((t2) => this.loop(t2));
   }
 }

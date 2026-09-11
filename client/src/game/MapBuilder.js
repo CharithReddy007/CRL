@@ -1,16 +1,20 @@
 import * as THREE from 'three';
+import { noiseTexture, woodTexture, brickTexture, grassTexture } from './Textures.js';
 
 // Per-map, per-kind visual styling. Distinct palettes give each map its own
 // identity while kind-based tinting keeps zones readable within a map.
+// `texture` is a factory (kind, palette-independent) that returns a
+// CanvasTexture to use as the diffuse map, for surfaces large enough that a
+// flat color reads as plastic-y.
 const PALETTES = {
   iron_yard: {
     default: { color: 0x4a4640 },
-    ground: { color: 0x36322b },
-    spawn_pad: { color: 0x413b30 },
-    yard: { color: 0x3a352d },
-    site_floor: { color: 0x46403a },
-    backhall: { color: 0x3a352e },
-    wall: { color: 0x5b5850, roughness: 0.9 },
+    ground: { color: 0x36322b, texture: () => noiseTexture('#36322b', 22, 128, 16) },
+    spawn_pad: { color: 0x413b30, texture: () => noiseTexture('#413b30', 18, 128, 6) },
+    yard: { color: 0x3a352d, texture: () => noiseTexture('#3a352d', 18, 128, 10) },
+    site_floor: { color: 0x46403a, texture: () => noiseTexture('#46403a', 16, 128, 6) },
+    backhall: { color: 0x3a352e, texture: () => noiseTexture('#3a352e', 16, 128, 8) },
+    wall: { color: 0x5b5850, roughness: 0.9, texture: () => noiseTexture('#5b5850', 20, 96, 3) },
     wall_top: { color: 0x5b5850, roughness: 0.9 },
     garage_frame: { color: 0x6b4a2e },
     crate: { color: 0x8a5a2b, roughness: 0.8 },
@@ -28,10 +32,10 @@ const PALETTES = {
   },
   neon_district: {
     default: { color: 0x262a33 },
-    ground: { color: 0x15171d },
-    spawn_pad: { color: 0x1b1e25 },
-    street: { color: 0x191b21 },
-    building: { color: 0x24272f, metalness: 0.2, roughness: 0.7 },
+    ground: { color: 0x15171d, texture: () => noiseTexture('#15171d', 12, 128, 18) },
+    spawn_pad: { color: 0x1b1e25, texture: () => noiseTexture('#1b1e25', 10, 128, 6) },
+    street: { color: 0x191b21, texture: () => noiseTexture('#191b21', 12, 128, 10) },
+    building: { color: 0x24272f, metalness: 0.2, roughness: 0.7, texture: () => brickTexture('#262a33', '#1a1c22', 96, 3) },
     building_block: { color: 0x1f222a },
     alley_wall: { color: 0x2a2d36 },
     rooftop: { color: 0x272a33 },
@@ -52,11 +56,11 @@ const PALETTES = {
   },
   desert_relay: {
     default: { color: 0x9c8863 },
-    sand: { color: 0xc2a875, roughness: 1 },
-    spawn_pad: { color: 0xb89c6e },
-    rock: { color: 0x8a7860, roughness: 1 },
-    trench: { color: 0xa88f63, roughness: 1 },
-    bunker_wall: { color: 0x6e6a5c, roughness: 0.9 },
+    sand: { color: 0xc2a875, roughness: 1, texture: () => noiseTexture('#c2a875', 20, 128, 20) },
+    spawn_pad: { color: 0xb89c6e, texture: () => noiseTexture('#b89c6e', 16, 128, 8) },
+    rock: { color: 0x8a7860, roughness: 1, texture: () => noiseTexture('#8a7860', 26, 96, 2) },
+    trench: { color: 0xa88f63, roughness: 1, texture: () => noiseTexture('#a88f63', 18, 96, 6) },
+    bunker_wall: { color: 0x6e6a5c, roughness: 0.9, texture: () => noiseTexture('#6e6a5c', 14, 96, 3) },
     bunker_small: { color: 0x6e6a5c, roughness: 0.9 },
     tunnel_wall: { color: 0x635e50 },
     tunnel_floor: { color: 0x5c5648 },
@@ -77,7 +81,8 @@ function materialFor(mapId, kind) {
   const palette = PALETTES[mapId] || {};
   const style = palette[kind] || palette.default || { color: 0x808080 };
   const mat = new THREE.MeshStandardMaterial({
-    color: style.color,
+    color: style.texture ? 0xffffff : style.color,
+    map: style.texture ? style.texture() : null,
     roughness: style.roughness ?? 0.85,
     metalness: style.metalness ?? 0.1,
     emissive: style.emissive ?? 0x000000,
