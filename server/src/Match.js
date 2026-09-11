@@ -35,6 +35,7 @@ function initAmmo(state) {
 }
 
 let uidCounter = 1;
+const ASSIST_WINDOW_TICKS = 5 * TICK_RATE;
 
 export class Match {
   constructor(room, mapData) {
@@ -75,6 +76,7 @@ export class Match {
       lastFireTick: -9999,
       hasCore: false,
       interacting: null,
+      lastDamager: null,
       pendingInput: null,
       lastInputSeq: 0,
       spectating: null,
@@ -139,6 +141,7 @@ export class Match {
       p.hasCore = false;
       p.interacting = null;
       p.spectating = null;
+      p.lastDamager = null;
     }
     this.core = { state: 'none', carrierId: null, pos: null, siteId: null };
     const attackers = [...this.players.values()].filter(p => p.team === this.attackTeam && p.alive);
@@ -216,7 +219,11 @@ export class Match {
     nearestPlayer.armorValue = Math.max(0, nearestPlayer.armorValue - armorDamage);
     nearestPlayer.hp -= damage;
     this.broadcast(S2C.DAMAGE, { shooterId: shooter.id, targetId: nearestPlayer.id, zone: hitZone, damage, hp: Math.max(0, nearestPlayer.hp) });
-    if (nearestPlayer.hp <= 0) this.killPlayer(nearestPlayer, shooter, hitZone);
+    if (nearestPlayer.hp <= 0) {
+      this.killPlayer(nearestPlayer, shooter, hitZone);
+    } else {
+      nearestPlayer.lastDamager = { id: shooter.id, tick: this.tick };
+    }
   }
 
   handleReload(playerId) {
@@ -308,6 +315,12 @@ export class Match {
       killer.kills += 1;
       killer.credits = Math.min(MAX_CREDITS, killer.credits + CREDIT_KILL);
     }
+    const lastDamager = target.lastDamager;
+    if (lastDamager && lastDamager.id !== killer?.id && this.tick - lastDamager.tick <= ASSIST_WINDOW_TICKS) {
+      const assister = this.players.get(lastDamager.id);
+      if (assister) assister.assists += 1;
+    }
+    target.lastDamager = null;
     if (target.hasCore) {
       target.hasCore = false;
       this.core = { state: 'dropped', carrierId: null, pos: target.pos.slice(), siteId: null };
