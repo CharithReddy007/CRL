@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { noiseTexture, woodTexture, brickTexture, grassTexture } from './Textures.js';
+import { noiseTexture, woodTexture, brickTexture, fabricTexture, grassTexture } from './Textures.js';
 
 // Per-map, per-kind visual styling. Distinct palettes give each map its own
 // identity while kind-based tinting keeps zones readable within a map.
@@ -73,6 +73,50 @@ const PALETTES = {
     radar_mast: { color: 0x55524a, metalness: 0.5 },
     radar_dish: { color: 0xd6d0c0, metalness: 0.5 },
   },
+  maple_hollow: {
+    default: { color: 0x8a8272 },
+    grass: { color: 0x3c6b34, texture: () => grassTexture() },
+    park_floor: { color: 0x4a7a3e, texture: () => noiseTexture('#4a7a3e', 20, 128, 12) },
+    road: { color: 0x2b2b2e, texture: () => noiseTexture('#2b2b2e', 14, 128, 14) },
+    street: { color: 0x2b2b2e, texture: () => noiseTexture('#2b2b2e', 14, 128, 14) },
+    sidewalk: { color: 0xb8b3a8, texture: () => noiseTexture('#b8b3a8', 14, 128, 10) },
+    house_wall: { color: 0xd8c9a8, texture: () => woodTexture('#d8c9a8', '#b8a482', 128, 4) },
+    house_wall_int: { color: 0xe8e0d0, roughness: 0.9, texture: () => noiseTexture('#e8e0d0', 10, 96, 4) },
+    house_yellow: { color: 0xd9b84a, texture: () => woodTexture('#d9b84a', '#b89530', 128, 4) },
+    house_grey: { color: 0x8a8f96, texture: () => woodTexture('#8a8f96', '#6e727a', 128, 4) },
+    roof_dark: { color: 0x332e2a, roughness: 0.8, texture: () => noiseTexture('#332e2a', 12, 96, 6) },
+    floor_wood: { color: 0xa3703f, texture: () => woodTexture('#a3703f', '#7a4f28', 128, 5) },
+    loft_floor: { color: 0x8f5f37, texture: () => woodTexture('#8f5f37', '#6a4322', 128, 4) },
+    patio_floor: { color: 0xa89a86, texture: () => noiseTexture('#a89a86', 16, 128, 10) },
+    stair: { color: 0x7a5230, roughness: 0.7 },
+    railing: { color: 0xc9c2b0, metalness: 0.6, roughness: 0.3 },
+    garage_door: { color: 0xb8b0a0, roughness: 0.5 },
+    fence: { color: 0x8a7355, roughness: 0.8 },
+    hedge: { color: 0x3f6a34, roughness: 1 },
+    tree_trunk: { color: 0x4a3423, roughness: 0.9 },
+    tree_canopy: { color: 0x3f6b34, roughness: 0.9 },
+    park_bench: { color: 0x6b4a2e, roughness: 0.7 },
+    mailbox_top: { color: 0x7a2a2a, roughness: 0.5 },
+    porch_post: { color: 0x7a5a3a, roughness: 0.7 },
+    porch_roof: { color: 0x3a3028, roughness: 0.8 },
+    porch_step: { color: 0x7a5a3a, roughness: 0.7 },
+    furn_wood: { color: 0x8a5a34, roughness: 0.7 },
+    furn_wood_dark: { color: 0x5c3c22, roughness: 0.7 },
+    furn_fabric: { color: 0x5b7c99, texture: () => fabricTexture('#5b7c99') },
+    furn_fabric_dark: { color: 0x3f586b, texture: () => fabricTexture('#3f586b') },
+    furn_fabric_bed: { color: 0x8a4a4a, texture: () => fabricTexture('#8a4a4a') },
+    furn_fabric_light: { color: 0xd8cbb0, texture: () => fabricTexture('#d8cbb0') },
+    furn_counter: { color: 0x6b4a30, roughness: 0.6 },
+    furn_counter_top: { color: 0xcac2b4, roughness: 0.3 },
+    appliance: { color: 0xd8d8d8, metalness: 0.3, roughness: 0.4 },
+    appliance_dark: { color: 0x1c1c1e, metalness: 0.2, roughness: 0.5, emissive: 0x1a2a3a, emissiveIntensity: 0.25 },
+    vehicle: { color: 0x8a2a2a, metalness: 0.5, roughness: 0.3 },
+    vehicle_alt: { color: 0x2a4a7a, metalness: 0.5, roughness: 0.3 },
+    vehicle_garage: { color: 0x555a60, metalness: 0.5, roughness: 0.35 },
+    vehicle_glass: { color: 0x0d1a22, metalness: 0.6, roughness: 0.1, transparent: true, opacity: 0.85 },
+    patio_metal: { color: 0x3a3a3a, metalness: 0.6, roughness: 0.3 },
+    patio_chair: { color: 0x6a5a48, roughness: 0.6 },
+  },
 };
 
 const NON_SOLID_TWO_SIDED = new Set(['neon_sign', 'crane_boom', 'crane_mast', 'radar_dish']);
@@ -132,6 +176,7 @@ export function buildSkyAndFog(scene, mapId) {
     iron_yard: { sky: 0x8a8f96, fog: 0x74777c, ambient: 0x9aa2ab },
     neon_district: { sky: 0x0a0c14, fog: 0x0d0f18, ambient: 0x1a2035 },
     desert_relay: { sky: 0xcfd9e8, fog: 0xd8c9a0, ambient: 0xd6c9a5 },
+    maple_hollow: { sky: 0xd9895a, fog: 0xcf8f6a, ambient: 0xdba077 },
   };
   const c = skyColors[mapId] || skyColors.iron_yard;
   scene.background = new THREE.Color(c.sky);
@@ -143,8 +188,8 @@ export function addLighting(scene, mapId) {
   const c = buildSkyAndFog(scene, mapId);
   const hemi = new THREE.HemisphereLight(0xffffff, c.ambient, mapId === 'neon_district' ? 0.5 : 0.9);
   scene.add(hemi);
-  const sun = new THREE.DirectionalLight(0xffffff, mapId === 'neon_district' ? 0.4 : 1.1);
-  sun.position.set(40, 60, 20);
+  const sun = new THREE.DirectionalLight(mapId === 'maple_hollow' ? 0xffb37a : 0xffffff, mapId === 'neon_district' ? 0.4 : 1.1);
+  sun.position.set(mapId === 'maple_hollow' ? 55 : 40, mapId === 'maple_hollow' ? 22 : 60, 20);
   sun.castShadow = true;
   sun.shadow.mapSize.set(1024, 1024);
   sun.shadow.camera.left = -80;

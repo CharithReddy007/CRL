@@ -27,6 +27,16 @@ export function floor(x, y, z, w, d, kind = 'floor', solid = true) {
   return box(x, y - 0.15, z, w, 0.3, d, kind, solid);
 }
 
+// A ground plane specifically (not an elevated platform/rooftop): much
+// thicker than floor()'s thin slab, since a long freefall from a tall
+// rooftop can build enough velocity to cross a thin collider within a
+// single physics tick and tunnel through undetected (collision is only
+// checked at each tick's end position). The extra thickness goes downward
+// from the same walkable top surface, so it's otherwise identical to floor().
+export function groundPlane(x, y, z, w, d, kind = 'floor') {
+  return box(x, y - 2, z, w, 4, d, kind, true);
+}
+
 export function stairs(x, z, dirX, dirZ, count, stepW, stepH, stepD, kind = 'stair', y0 = 0) {
   const out = [];
   for (let i = 0; i < count; i++) {
