@@ -55,6 +55,21 @@ a single deployed server is enough — no separate static host needed.
 | Q / E | Cycle spectate target (while dead) |
 | Esc | Pause menu / sensitivity |
 
+## Deploying
+
+The whole game (client + server) runs as a single Node.js process, so any
+Node hosting platform works:
+
+- **Build command:** `npm install && npm run build`
+- **Start command:** `npm start`
+- The server reads `PORT` from the environment automatically (defaults to
+  8080 locally) and needs no database or other config.
+
+A `render.yaml` is included so Render can auto-detect these settings as a
+Blueprint. See the README's "Deploying" walkthrough shared with the project
+owner for exact click-by-click steps on Render, or use the same two commands
+above on Railway, Fly.io, or any other Node PaaS.
+
 ## Project layout
 
 ```

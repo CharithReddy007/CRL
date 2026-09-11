@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "description": "CRL - original browser-based multiplayer tactical FPS",
+  "engines": {
+    "node": ">=18"
+  },
   "workspaces": [
     "shared",
     "server",
@@ -11,6 +14,8 @@
   "scripts": {
     "dev:server": "npm run dev -w server",
     "dev:client": "npm run dev -w client",
-    "build:client": "npm run build -w client"
+    "build:client": "npm run build -w client",
+    "build": "npm run build -w client",
+    "start": "node server/src/index.js"
   }
 }
