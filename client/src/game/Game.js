@@ -153,7 +153,14 @@ export class Game {
       }
     }
     this.remotePlayers?.sync(msg.players, this.selfId);
-    this.minimap?.update(msg.players, this.selfId, this.latestCore);
+    // The minimap's self marker should track the live camera instantly, not
+    // the last server-echoed yaw -- over a real network connection that lag
+    // (one round trip behind) makes the arrow visibly trail behind where
+    // you're actually looking, especially mid-turn.
+    const minimapPlayers = me
+      ? msg.players.map((p) => (p.id === this.selfId ? { ...p, yaw: this.controller.yaw } : p))
+      : msg.players;
+    this.minimap?.update(minimapPlayers, this.selfId, this.latestCore);
     this.hud.setCoreState(this.latestCore);
     // snapshots carry round info every tick, giving a smooth live countdown
     // (the round_state broadcast only fires on phase transitions)
