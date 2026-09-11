@@ -7,8 +7,13 @@ export class Net {
 
   connect() {
     return new Promise((resolve, reject) => {
+      // VITE_WS_URL lets the client be deployed separately from the server
+      // (e.g. client on Vercel, server on Render) by pointing at the
+      // server's own origin instead of assuming same-origin. Must be a full
+      // ws(s):// URL including the /ws path. Falls back to same-origin for
+      // local dev / single-server deployments.
       const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-      const url = `${proto}://${location.host}/ws`;
+      const url = import.meta.env.VITE_WS_URL || `${proto}://${location.host}/ws`;
       this.socket = new WebSocket(url);
       this.socket.addEventListener('open', () => { this.connected = true; resolve(); });
       this.socket.addEventListener('error', (e) => reject(e));

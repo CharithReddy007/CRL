@@ -57,18 +57,32 @@ a single deployed server is enough — no separate static host needed.
 
 ## Deploying
 
-The whole game (client + server) runs as a single Node.js process, so any
-Node hosting platform works:
+### Single service (any Node host)
+
+The whole game (client + server) can run as one Node.js process:
 
 - **Build command:** `npm install && npm run build`
 - **Start command:** `npm start`
 - The server reads `PORT` from the environment automatically (defaults to
   8080 locally) and needs no database or other config.
 
-A `render.yaml` is included so Render can auto-detect these settings as a
-Blueprint. See the README's "Deploying" walkthrough shared with the project
-owner for exact click-by-click steps on Render, or use the same two commands
-above on Railway, Fly.io, or any other Node PaaS.
+`render.yaml` builds and serves it this way as a single Render Blueprint
+service.
+
+### Split: server on Render, client on Vercel
+
+The client and server can also be deployed separately. The server needs
+nothing extra (WebSocket connections aren't subject to CORS), but the
+client's `VITE_WS_URL` build-time env var must point at the deployed
+server's WebSocket endpoint, since it can no longer assume same-origin:
+
+- **Render** (backend): `render.yaml` is already scoped to backend-only
+  (`npm install` + `npm start`, no client build).
+- **Vercel** (frontend): `vercel.json` at the repo root sets the build
+  (`npm run build`) and output directory (`client/dist`) for this monorepo.
+  Set the `VITE_WS_URL` environment variable in the Vercel project to your
+  Render service's WebSocket URL, e.g. `wss://your-service.onrender.com/ws`
+  (note `wss://`, not `https://`, and the `/ws` path), then redeploy.
 
 ## Project layout
 

@@ -1,9 +1,9 @@
 services:
   - type: web
-    name: crl
+    name: crl-backend
     env: node
     plan: free
-    buildCommand: npm install && npm run build
+    buildCommand: npm install
     startCommand: npm start
     envVars:
       - key: NODE_VERSION
