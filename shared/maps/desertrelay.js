@@ -7,6 +7,7 @@
 //   Z +16..+36  Rotation trenches
 //   Z +36..+58  Defender Spawn
 import { box, wallSeg, floor, groundPlane, crate, pillar, stairsRise, siteZone, spawnPoint, callout } from '../mapkit.js';
+import { desk, officeChair, lockerRow, monitorOnDesk, shelfUnit } from '../propkit.js';
 
 const g = [];
 const push = (...items) => { for (const it of items) g.push(it); };
@@ -38,7 +39,19 @@ push(box(0, 2.2, -38, 5, 4.4, 5, 'rock', true, { rotY: 0.6 }));
 push(box(-4, 1, -22, 30, 2, 3, 'trench', true)); push(box(-4, 1, -18, 30, 2, 3, 'trench', true));
 push(pillar(0, -46, 11, 1, 'radar_mast'));
 push(box(0, 8, -46, 8, 0.4, 0.4, 'radar_dish', false));
-push(box(8, 1.2, -24, 5, 2.4, 5, 'bunker_small', true)); push(box(-10, 1.2, -46, 5, 2.4, 5, 'bunker_small', true));
+push(box(8, 1.2, -24, 5, 2.4, 5, 'bunker_small', true));
+// enterable radar control shack, next to the mast it monitors (was a solid bunker)
+push(wallSeg(-12.5, -48.5, -12.5, -43.5, 2.4, 0, 0.2, 'bunker_wall')); // west wall
+push(wallSeg(-12.5, -48.5, -7.5, -48.5, 2.4, 0, 0.2, 'bunker_wall')); // north wall
+push(wallSeg(-12.5, -43.5, -7.5, -43.5, 2.4, 0, 0.2, 'bunker_wall')); // south wall
+push(wallSeg(-7.5, -48.5, -7.5, -46.8, 2.4, 0, 0.2, 'bunker_wall')); // east wall, door gap z-46.8..-45.2
+push(wallSeg(-7.5, -45.2, -7.5, -43.5, 2.4, 0, 0.2, 'bunker_wall'));
+push(box(-10, 2.55, -46, 5.4, 0.3, 5.4, 'bunker_wall', false));
+push(floor(-10, 0.01, -46, 5, 5, 'tunnel_floor', false));
+push(...desk(-10, -47.5, 0));
+push(...monitorOnDesk(-10, -47.5, 0));
+push(...officeChair(-10, -46.3, Math.PI));
+push(...shelfUnit(-11.5, -44.2, 0, 2.5, 3));
 // tunnel body, resurfacing inside Site A's back interior
 push(floor(-38, TUNNEL_Y - 0.01, -34, 6, 46, 'tunnel_floor'));
 push(wallSeg(-41, -50, -41, -22, 4, TUNNEL_Y, 0.6, 'tunnel_wall'));
@@ -82,6 +95,16 @@ push(wallSeg(-24, 38, -24, 58, 6, 0, 1, 'wall'));
 push(wallSeg(24, 38, 24, 58, 6, 0, 1, 'wall'));
 push(wallSeg(-24, 38, -6, 38, 6, 0, 1, 'wall'));
 push(wallSeg(6, 38, 24, 38, 6, 0, 1, 'wall'));
+// guard room, tucked against the existing west outer wall (x=-24)
+push(wallSeg(-18, 40, -18, 42.5, 3, 0, 0.2, 'office_wall')); // east wall, door gap z42.5..45.5
+push(wallSeg(-18, 45.5, -18, 47, 3, 0, 0.2, 'office_wall'));
+push(wallSeg(-24, 40, -18, 40, 3, 0, 0.2, 'office_wall'));
+push(wallSeg(-24, 47, -18, 47, 3, 0, 0.2, 'office_wall'));
+push(floor(-21, 0.01, 43.5, 6, 7, 'office_floor', false));
+push(...desk(-21, 46, 0));
+push(...monitorOnDesk(-21, 46, 0));
+push(...officeChair(-21, 44.7, 0));
+push(...lockerRow(-21, 40.7, 0, 3, 0.6));
 
 // Full perimeter enclosure -- see the matching comment in ironyard.js.
 push(wallSeg(-55, -82, 55, -82, 6, 0, 1, 'wall'));
