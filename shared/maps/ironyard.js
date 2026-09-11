@@ -9,6 +9,7 @@
 // spawn-roof staircase, east across Mid Yard, then south and down inside
 // Site A's open-top footprint — a true aerial flank route.
 import { box, wallSeg, floor, groundPlane, crate, container, pillar, stairs, stairsRise, siteZone, spawnPoint, callout } from '../mapkit.js';
+import { desk, officeChair, lockerRow, monitorOnDesk, bench, shelfUnit } from '../propkit.js';
 
 const g = [];
 const push = (...items) => { for (const it of items) g.push(it); };
@@ -28,6 +29,17 @@ push(wallSeg(-14, -55, -7, -55, 6, 0, 1, 'wall'));
 push(wallSeg(7, -55, 14, -55, 6, 0, 1, 'wall'));
 push(wallSeg(20, -55, 30, -55, 6, 0, 1, 'wall'));
 push(crate(-25, 0, -68, 1.8), crate(-22, 0, -65, 1.6), crate(24, 0, -67, 1.8), crate(21, 0, -64, 1.6));
+// break room, tucked into the SE corner against the existing outer east
+// wall (x=30) -- an enterable interior room off the open spawn shell
+push(wallSeg(23, -65, 23, -63, 3, 0, 0.2, 'office_wall')); // west wall, door gap z-63..-60
+push(wallSeg(23, -60, 23, -58, 3, 0, 0.2, 'office_wall'));
+push(wallSeg(23, -58, 29, -58, 3, 0, 0.2, 'office_wall'));
+push(wallSeg(23, -65, 29, -65, 3, 0, 0.2, 'office_wall'));
+push(floor(26, 0.01, -61.5, 6, 7, 'office_floor', false));
+push(...desk(26, -64, 0));
+push(...monitorOnDesk(26, -64, 0));
+push(...officeChair(26, -62.8, Math.PI));
+push(...lockerRow(26, -58.7, 0, 3, 0.6));
 
 // staircase up to spawn rooftop, then the catwalk chain across Mid Yard and
 // down inside Site A. Each leg starts exactly where the previous ends.
@@ -100,6 +112,17 @@ push(wallSeg(-25, 37, -25, 55, 6, 0, 1, 'wall'));
 push(wallSeg(25, 37, 25, 55, 6, 0, 1, 'wall'));
 push(wallSeg(-25, 37, -4, 37, 6, 0, 1, 'wall'));
 push(wallSeg(4, 37, 25, 37, 6, 0, 1, 'wall'));
+// guard room, tucked against the existing west outer wall (x=-25) just past
+// the Back Hall entrance -- an enterable interior room off the open spawn
+push(wallSeg(-19, 39, -19, 41.5, 3, 0, 0.2, 'office_wall')); // east wall, door gap z41.5..44.5
+push(wallSeg(-19, 44.5, -19, 46, 3, 0, 0.2, 'office_wall'));
+push(wallSeg(-25, 39, -19, 39, 3, 0, 0.2, 'office_wall'));
+push(wallSeg(-25, 46, -19, 46, 3, 0, 0.2, 'office_wall'));
+push(floor(-22, 0.01, 42.5, 6, 7, 'office_floor', false));
+push(...desk(-22, 45, 0));
+push(...monitorOnDesk(-22, 45, 0));
+push(...officeChair(-22, 43.7, 0));
+push(...lockerRow(-22, 39.7, 0, 3, 0.6));
 
 // Full perimeter enclosure -- the walls above cover each room/yard's own
 // boundary but leave gaps at the declared map bounds' outer edges (e.g.
