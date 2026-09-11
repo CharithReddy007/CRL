@@ -6,6 +6,7 @@
 //   Z +12..+30  Back streets (rotation)
 //   Z +30..+50  Defender Spawn
 import { box, wallSeg, floor, groundPlane, crate, pillar, stairs, stairsRise, siteZone, spawnPoint, callout } from '../mapkit.js';
+import { desk, officeChair, lockerRow, monitorOnDesk, shelfUnit } from '../propkit.js';
 
 const g = [];
 const push = (...items) => { for (const it of items) g.push(it); };
@@ -32,8 +33,20 @@ push(box(-16, 3, -60, 0.6, 6, 8, 'neon_sign', false), box(16, 3, -60, 0.6, 6, 8,
 // ---- Main Street + alleys ----
 push(floor(0, 0.01, -32, 40, 40, 'street', false));
 // street-front buildings (west row / east row) leaving street open through middle, alleys behind
-push(box(-16, 4, -46, 8, 8, 6, 'building', true)); push(box(-16, 4, -24, 8, 8, 10, 'building', true));
+push(box(-16, 4, -46, 8, 8, 6, 'building', true));
 push(box(16, 4, -44, 8, 8, 8, 'building', true)); push(box(16, 4, -20, 8, 8, 8, 'building', true));
+// enterable corner shop (was a solid decorative building) -- x -20..-12, z -29..-19
+push(wallSeg(-20, -29, -20, -19, 3, 5, 0.4, 'building')); // west wall (upper 3m; the alley_wall below already covers y0-5 at this x)
+push(wallSeg(-20, -29, -12, -29, 8, 0, 0.4, 'building')); // north wall
+push(wallSeg(-20, -19, -12, -19, 8, 0, 0.4, 'building')); // south wall
+push(wallSeg(-12, -29, -12, -25, 8, 0, 0.4, 'building')); // east wall, door gap z-25..-22
+push(wallSeg(-12, -22, -12, -19, 8, 0, 0.4, 'building'));
+push(box(-16, 7.85, -24, 9, 0.3, 11, 'rooftop', false));
+push(floor(-16, 0.01, -24, 8, 10, 'building_block', false));
+push(...shelfUnit(-18, -28.7, 0, 3, 3));
+push(...shelfUnit(-14, -28.7, 0, 3, 3));
+push(...desk(-14.5, -22, Math.PI));
+push(...officeChair(-14.5, -23.3, 0));
 push(wallSeg(-20, -52, -20, -14, 5, 0, 0.6, 'alley_wall')); // west alley outer wall
 push(wallSeg(20, -52, 20, -14, 5, 0, 0.6, 'alley_wall')); // east alley outer wall
 push(crate(-10, 0, -40, 1.4), crate(9, 0, -36, 1.4), crate(-6, 0, -20, 1.4), crate(6, 0, -26, 1.4));
@@ -108,6 +121,16 @@ push(wallSeg(-20, 37, -20, 53, 6, 0, 1, 'wall'));
 push(wallSeg(20, 37, 20, 53, 6, 0, 1, 'wall'));
 push(wallSeg(-20, 37, -6, 37, 6, 0, 1, 'wall'));
 push(wallSeg(6, 37, 20, 37, 6, 0, 1, 'wall'));
+// guard booth, tucked against the existing west outer wall (x=-20)
+push(wallSeg(-14, 39, -14, 41.5, 3, 0, 0.2, 'office_wall')); // east wall, door gap z41.5..44.5
+push(wallSeg(-14, 44.5, -14, 46, 3, 0, 0.2, 'office_wall'));
+push(wallSeg(-20, 39, -14, 39, 3, 0, 0.2, 'office_wall'));
+push(wallSeg(-20, 46, -14, 46, 3, 0, 0.2, 'office_wall'));
+push(floor(-17, 0.01, 42.5, 6, 7, 'office_floor', false));
+push(...desk(-17, 45, 0));
+push(...monitorOnDesk(-17, 45, 0));
+push(...officeChair(-17, 43.7, 0));
+push(...lockerRow(-17, 39.7, 0, 3, 0.6));
 
 // Full perimeter enclosure -- see the matching comment in ironyard.js.
 push(wallSeg(-42, -68, 42, -68, 6, 0, 1, 'wall'));
