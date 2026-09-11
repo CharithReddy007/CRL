@@ -141,7 +141,7 @@ export function addLighting(scene, mapId) {
   const sun = new THREE.DirectionalLight(0xffffff, mapId === 'neon_district' ? 0.4 : 1.1);
   sun.position.set(40, 60, 20);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.mapSize.set(1024, 1024);
   sun.shadow.camera.left = -80;
   sun.shadow.camera.right = 80;
   sun.shadow.camera.top = 80;

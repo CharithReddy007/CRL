@@ -189,7 +189,7 @@ export class Match {
     const spreadRad = (spreadDeg * Math.PI) / 180;
     const cy = Math.cos(p.yaw), sy = Math.sin(p.yaw);
     const cp = Math.cos(p.pitch), sp = Math.sin(p.pitch);
-    const dir = [sy * cp, sp, cy * cp];
+    const dir = [-sy * cp, sp, -cy * cp]; // matches THREE camera forward (-Z at yaw=pitch=0)
     const up = Math.abs(dir[1]) < 0.99 ? [0, 1, 0] : [1, 0, 0];
     const right = normalize(cross(dir, up));
     const trueUp = cross(right, dir);

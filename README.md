@@ -48,10 +48,11 @@ a single deployed server is enough — no separate static host needed.
 | R | Reload |
 | 1 / 2 / 3 | Primary / Secondary / Melee |
 | F (hold) | Plant / defuse the Core |
-| C | Crouch |
+| C / Shift | Crouch |
 | Space | Jump |
 | B | Buy menu (buy phase only) |
 | Tab | Scoreboard |
+| M (hold) | Full map view |
 | Q / E | Cycle spectate target (while dead) |
 | Esc | Pause menu / sensitivity |
 

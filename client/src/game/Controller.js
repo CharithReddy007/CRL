@@ -86,7 +86,7 @@ export class Controller {
   currentInput() {
     const forward = (this.keys.has('KeyW') ? 1 : 0) - (this.keys.has('KeyS') ? 1 : 0);
     const strafe = (this.keys.has('KeyD') ? 1 : 0) - (this.keys.has('KeyA') ? 1 : 0);
-    const crouch = this.keys.has('KeyC') || this.keys.has('ControlLeft');
+    const crouch = this.keys.has('KeyC') || this.keys.has('ControlLeft') || this.keys.has('ShiftLeft') || this.keys.has('ShiftRight');
     const jump = this.jumpQueued;
     this.jumpQueued = false;
     return { moveX: strafe, moveZ: forward, yaw: this.yaw, pitch: this.pitch, jump, crouch, ads: this.adsHeld };

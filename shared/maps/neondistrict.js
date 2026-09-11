@@ -117,8 +117,8 @@ export const NEON_DISTRICT = {
   geometry: g,
   sites: g.filter(o => o.kind === 'site'),
   spawns: {
-    A: [spawnPoint(-14, -60, 0), spawnPoint(-4, -60, 0), spawnPoint(4, -60, 0), spawnPoint(14, -60, 0), spawnPoint(0, -64, 0)],
-    B: [spawnPoint(-12, 48, Math.PI), spawnPoint(-4, 48, Math.PI), spawnPoint(4, 48, Math.PI), spawnPoint(12, 48, Math.PI), spawnPoint(0, 51, Math.PI)],
+    A: [spawnPoint(-14, -60, Math.PI), spawnPoint(-4, -60, Math.PI), spawnPoint(4, -60, Math.PI), spawnPoint(14, -60, Math.PI), spawnPoint(0, -64, Math.PI)],
+    B: [spawnPoint(-12, 48, 0), spawnPoint(-4, 48, 0), spawnPoint(4, 48, 0), spawnPoint(12, 48, 0), spawnPoint(0, 51, 0)],
   },
   callouts: [
     callout(-16, -35, 'West Alley'), callout(16, -32, 'East Alley'), callout(-14, -25, 'Rooftop Run'),

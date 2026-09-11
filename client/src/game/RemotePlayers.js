@@ -12,7 +12,7 @@ function buildAvatar(team) {
   capsule.position.y = PLAYER_HEIGHT / 2;
   group.add(capsule);
   const gun = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.5), new THREE.MeshStandardMaterial({ color: 0x1a1a1a }));
-  gun.position.set(PLAYER_RADIUS * 0.6, PLAYER_HEIGHT * 0.6, 0.35);
+  gun.position.set(PLAYER_RADIUS * 0.6, PLAYER_HEIGHT * 0.6, -0.35); // -Z is "forward" (matches yaw convention)
   group.add(gun);
   group.userData.capsule = capsule;
   group.userData.gun = gun;

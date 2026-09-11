@@ -83,7 +83,11 @@ export function simulateMove(state, input, dt, geometry) {
   const crouched = !!input.crouch;
 
   const yaw = input.yaw || 0;
-  const fwd = [Math.sin(yaw), Math.cos(yaw)];
+  // Three.js cameras look down -Z by default, so at yaw=0 "forward" is -Z,
+  // not +Z. This must match camera.rotation.y exactly (verified against
+  // THREE.Object3D's actual quaternion) or movement drifts from where the
+  // player is looking.
+  const fwd = [-Math.sin(yaw), -Math.cos(yaw)];
   const right = [Math.cos(yaw), -Math.sin(yaw)];
   let wishX = right[0] * input.moveX + fwd[0] * input.moveZ;
   let wishZ = right[1] * input.moveX + fwd[1] * input.moveZ;

@@ -5,6 +5,7 @@ import { Controller } from './Controller.js';
 import { RemotePlayers } from './RemotePlayers.js';
 import { WeaponsView, FireGate } from './Weapons.js';
 import { Effects } from './Effects.js';
+import { Minimap } from './Minimap.js';
 import { audio } from './AudioFX.js';
 import { net } from '../net.js';
 import { HUD } from '../ui/HUD.js';
@@ -49,6 +50,8 @@ export class Game {
     this.controller = new Controller(canvas, () => this.solids);
     this.weaponsView = new WeaponsView(this.camera);
     this.remotePlayers = null;
+    this.minimap = null;
+    this.root = root;
     this.running = false;
     this.lastFrame = 0;
     this.adsAmount = 0;
@@ -74,6 +77,10 @@ export class Game {
       if (me && !me.alive && (e.code === 'KeyE' || e.code === 'KeyQ')) {
         this.cycleSpectate(e.code === 'KeyE' ? 1 : -1);
       }
+      if (e.code === 'KeyM' && !e.repeat) this.minimap?.showFull(true);
+    });
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'KeyM') this.minimap?.showFull(false);
     });
 
     net.on(S2C.SNAPSHOT, (msg) => this.onSnapshot(msg));
@@ -96,6 +103,8 @@ export class Game {
     this.scene.add(this.mapGroup);
     addLighting(this.scene, this.mapData.id);
     this.remotePlayers = new RemotePlayers(this.scene);
+    if (this.minimap) this.minimap.el.remove();
+    this.minimap = new Minimap(this.root, this.mapData);
     this.playerNames = new Map(matchStart.players.map((p) => [p.id, p.name]));
 
     const me = matchStart.players.find((p) => p.id === this.selfId);
@@ -143,6 +152,7 @@ export class Game {
       }
     }
     this.remotePlayers?.sync(msg.players, this.selfId);
+    this.minimap?.update(msg.players, this.selfId, this.latestCore);
     this.hud.setCoreState(this.latestCore);
     // snapshots carry round info every tick, giving a smooth live countdown
     // (the round_state broadcast only fires on phase transitions)

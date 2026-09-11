@@ -109,8 +109,8 @@ export const IRON_YARD = {
   geometry: g,
   sites: g.filter(o => o.kind === 'site'),
   spawns: {
-    A: [spawnPoint(-18, -66, 0), spawnPoint(-6, -66, 0), spawnPoint(6, -66, 0), spawnPoint(18, -66, 0), spawnPoint(0, -70, 0)],
-    B: [spawnPoint(-14, 50, Math.PI), spawnPoint(-4, 50, Math.PI), spawnPoint(4, 50, Math.PI), spawnPoint(14, 50, Math.PI), spawnPoint(0, 53, Math.PI)],
+    A: [spawnPoint(-18, -66, Math.PI), spawnPoint(-6, -66, Math.PI), spawnPoint(6, -66, Math.PI), spawnPoint(18, -66, Math.PI), spawnPoint(0, -70, Math.PI)],
+    B: [spawnPoint(-14, 50, 0), spawnPoint(-4, 50, 0), spawnPoint(4, 50, 0), spawnPoint(14, 50, 0), spawnPoint(0, 53, 0)],
   },
   callouts: [
     callout(-27, -66, 'Spawn Roof'), callout(0, -34, 'Crane'), callout(-20, -34, 'Container Spine'),

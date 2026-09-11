@@ -91,8 +91,8 @@ export const DESERT_RELAY = {
   geometry: g,
   sites: g.filter(o => o.kind === 'site'),
   spawns: {
-    A: [spawnPoint(-16, -66, 0), spawnPoint(-6, -66, 0), spawnPoint(6, -66, 0), spawnPoint(16, -66, 0), spawnPoint(0, -70, 0)],
-    B: [spawnPoint(-14, 52, Math.PI), spawnPoint(-4, 52, Math.PI), spawnPoint(4, 52, Math.PI), spawnPoint(14, 52, Math.PI), spawnPoint(0, 55, Math.PI)],
+    A: [spawnPoint(-16, -66, Math.PI), spawnPoint(-6, -66, Math.PI), spawnPoint(6, -66, Math.PI), spawnPoint(16, -66, Math.PI), spawnPoint(0, -70, Math.PI)],
+    B: [spawnPoint(-14, 52, 0), spawnPoint(-4, 52, 0), spawnPoint(4, 52, 0), spawnPoint(14, 52, 0), spawnPoint(0, 55, 0)],
   },
   callouts: [
     callout(-38, -58, 'Tunnel'), callout(0, -46, 'Radar'), callout(-22, -32, 'West Rocks'),
