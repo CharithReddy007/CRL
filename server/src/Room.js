@@ -19,12 +19,12 @@ export class Room {
   get size() { return this.members.size; }
 
   broadcast(type, payload) {
-    for (const m of this.members.values()) send(m.conn, type, payload);
+    for (const m of this.members.values()) send(m.conn, type, { ...payload, selfId: m.conn.id });
   }
 
   sendTo(id, type, payload) {
     const m = this.members.get(id);
-    if (m) send(m.conn, type, payload);
+    if (m) send(m.conn, type, { ...payload, selfId: id });
   }
 
   lobbyStatePayload() {

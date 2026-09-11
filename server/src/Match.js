@@ -64,7 +64,7 @@ export class Match {
     const state = {
       id: conn.id, name, team, conn,
       pos: [0, 0, 0], vel: [0, 0, 0], grounded: true, crouched: false,
-      yaw: 0, pitch: 0,
+      yaw: 0, pitch: 0, ads: false,
       hp: PLAYER_MAX_HP, armorType: null, armorValue: 0,
       alive: true,
       weapons: { ...DEFAULT_LOADOUT },
@@ -177,12 +177,12 @@ export class Match {
       const dir = this.aimDirWithSpread(p, weapon);
       this.resolveShot(p, weapon, origin, dir);
     }
-    this.broadcast(S2C.SOUND, { type: 'gunshot', weapon: weaponId, pos: p.pos, id: uidCounter++ });
+    this.broadcast(S2C.SOUND, { type: 'gunshot', weapon: weaponId, pos: p.pos, shooterId: p.id, id: uidCounter++ });
   }
 
   aimDirWithSpread(p, weapon) {
     const moving = Math.hypot(p.vel[0], p.vel[2]) > 0.5;
-    const spreadDeg = !p.grounded ? weapon.spread.jumping : moving ? weapon.spread.moving : weapon.spread.base;
+    const spreadDeg = !p.grounded ? weapon.spread.jumping : p.ads ? weapon.spread.ads : moving ? weapon.spread.moving : weapon.spread.base;
     const spreadRad = (spreadDeg * Math.PI) / 180;
     const cy = Math.cos(p.yaw), sy = Math.sin(p.yaw);
     const cp = Math.cos(p.pitch), sp = Math.sin(p.pitch);
@@ -349,6 +349,7 @@ export class Match {
     p.crouched = result.crouched;
     p.yaw = input.yaw;
     p.pitch = input.pitch || 0;
+    p.ads = !!input.ads;
     if (input.seq) p.lastInputSeq = input.seq;
   }
 
@@ -510,7 +511,8 @@ export class Match {
       round: this.roundStatePayload(),
       core: this.coreStatePayload(),
       players: [...this.players.values()].map(p => ({
-        id: p.id, name: p.name, team: p.team, pos: p.pos, yaw: p.yaw, pitch: p.pitch,
+        id: p.id, name: p.name, team: p.team, pos: p.pos, vel: p.vel, grounded: p.grounded,
+        yaw: p.yaw, pitch: p.pitch,
         hp: p.hp, armorType: p.armorType, armorValue: p.armorValue, alive: p.alive,
         crouched: p.crouched, active: p.active, weapons: p.weapons,
         ammo: p.ammo[p.active] || null, reloading: p.reloading, hasCore: p.hasCore,
