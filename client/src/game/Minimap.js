@@ -1,6 +1,8 @@
-// Live in-match minimap: a small north-locked corner radar (cropped/zoomed
-// around the local player) plus a full-map view on hold. Shows bomb sites,
-// the Core, and only the local player's own team (no enemy radar).
+// Live in-match minimap: a small corner radar (cropped/zoomed around the
+// local player, rotated so your facing is always "up" -- moving forward
+// always moves the dot up the radar, matching how you're actually walking)
+// plus a full, north-up map view on hold. Shows bomb sites, the Core, and
+// only the local player's own team (no enemy radar).
 import { TEAM_A } from '@crl/shared';
 
 const BG_SIZE = 640;
@@ -149,6 +151,13 @@ export class Minimap {
     cctx.beginPath();
     cctx.arc(cw / 2, ch / 2, cw / 2 - 1, 0, Math.PI * 2);
     cctx.clip();
+    // rotate the whole radar so the player's current facing is always "up" --
+    // walking forward always moves the dot up the radar, matching how you're
+    // actually moving, instead of a fixed north-up view where "forward" can
+    // point any which way on screen depending on which way you're facing.
+    cctx.translate(cw / 2, ch / 2);
+    cctx.rotate(Math.PI - me.yaw);
+    cctx.translate(-cw / 2, -ch / 2);
     cctx.drawImage(this.bg, sx, sy, sw, sh, 0, 0, cw, ch);
     const cornerScale = cw / (2 * CORNER_RADIUS);
     this.drawMarkers(cctx, players, selfId, core, (x, z) => [cw / 2 + (x - cx) * cornerScale, ch / 2 - (z - cz) * cornerScale]);
