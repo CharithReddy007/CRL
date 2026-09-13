@@ -60,6 +60,8 @@ export class Controller {
       if (e.code === 'Digit1' && this.onSwitchWeapon) this.onSwitchWeapon('primary');
       if (e.code === 'Digit2' && this.onSwitchWeapon) this.onSwitchWeapon('secondary');
       if (e.code === 'Digit3' && this.onSwitchWeapon) this.onSwitchWeapon('melee');
+      if (e.code === 'Digit4' && this.onSwitchWeapon) this.onSwitchWeapon('FRAG1');
+      if (e.code === 'Digit5' && this.onSwitchWeapon) this.onSwitchWeapon('SMOKE1');
       if (e.code === 'KeyF') { this.interactHeld = true; if (this.onInteractStart) this.onInteractStart(); }
       if (e.code === 'Tab') { e.preventDefault(); if (this.onToggleScoreboard) this.onToggleScoreboard(true); }
       if (e.code === 'Escape' && this.onToggleMenu) this.onToggleMenu();

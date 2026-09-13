@@ -38,6 +38,19 @@ export class Effects {
     this.spawnImpact(point, 0xd6394a);
   }
 
+  spawnExplosion(point) {
+    const mat = new THREE.MeshBasicMaterial({ color: 0xffb347, transparent: true, opacity: 1 });
+    const mesh = new THREE.Mesh(this.impactGeo, mat);
+    mesh.position.set(point[0], point[1] + 0.1, point[2]);
+    this.scene.add(mesh);
+    this.active.push({ mesh, mat, life: 0.4, maxLife: 0.4, kind: 'explosion' });
+
+    const light = new THREE.PointLight(0xffb347, 6, 12);
+    light.position.set(point[0], point[1] + 0.6, point[2]);
+    this.scene.add(light);
+    this.active.push({ mesh: light, mat: null, life: 0.25, maxLife: 0.25, kind: 'flash' });
+  }
+
   update(dt) {
     for (let i = this.active.length - 1; i >= 0; i--) {
       const fx = this.active[i];
@@ -45,13 +58,18 @@ export class Effects {
       const t = Math.max(0, fx.life / fx.maxLife);
       if (fx.kind === 'tracer') {
         fx.mat.opacity = t * 0.85;
+      } else if (fx.kind === 'flash') {
+        fx.mesh.intensity = t * 6;
+      } else if (fx.kind === 'explosion') {
+        fx.mat.opacity = t;
+        fx.mesh.scale.setScalar(1 + (1 - t) * 26);
       } else {
         fx.mat.opacity = t;
         fx.mesh.scale.setScalar(1 + (1 - t) * 1.8);
       }
       if (fx.life <= 0) {
         this.scene.remove(fx.mesh);
-        fx.mat.dispose();
+        if (fx.mat) fx.mat.dispose();
         this.active.splice(i, 1);
       }
     }

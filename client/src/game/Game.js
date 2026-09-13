@@ -6,6 +6,7 @@ import { RemotePlayers } from './RemotePlayers.js';
 import { WeaponsView, FireGate } from './Weapons.js';
 import { Effects } from './Effects.js';
 import { CoreView } from './CoreView.js';
+import { GrenadeView } from './GrenadeView.js';
 import { Minimap } from './Minimap.js';
 import { audio } from './AudioFX.js';
 import { net } from '../net.js';
@@ -15,7 +16,7 @@ import { Scoreboard } from '../ui/Scoreboard.js';
 import { PauseMenu } from '../ui/PauseMenu.js';
 import {
   C2S, S2C, ROUND_PHASE, MAPS_BY_ID, getWeapon, rayGeometry, rayPlayer,
-  PLAYER_HEIGHT, PLAYER_CROUCH_HEIGHT, TEAM_A, TICK_RATE,
+  PLAYER_HEIGHT, PLAYER_CROUCH_HEIGHT, TEAM_A, TICK_RATE, GRENADES,
 } from '@crl/shared';
 
 const BASE_FOV = 90;
@@ -41,6 +42,8 @@ export class Game {
 
     this.effects = new Effects(this.scene);
     this.coreView = new CoreView(this.scene);
+    this.grenadeView = new GrenadeView(this.scene);
+    this.latestGrenades = [];
     this.mapData = null;
     this.mapGroup = null;
     this.solids = [];
@@ -139,6 +142,7 @@ export class Game {
   onSnapshot(msg) {
     this.selfId = msg.selfId;
     this.latestCore = msg.core;
+    this.latestGrenades = msg.grenades || [];
     this.players = new Map(msg.players.map((p) => [p.id, p]));
     const me = this.players.get(this.selfId);
     if (me) {
@@ -147,9 +151,10 @@ export class Game {
       if (me.alive) {
         this.hud.setPlayer(me);
         this.buyMenu.setCredits(me.credits);
-        this.buyMenu.setOwned(me.weapons, me.armorType);
-        this.weaponsView.setWeapon(me.weapons[me.active]);
+        this.buyMenu.setOwned(me.weapons, me.armorType, me.boughtThisBuy, me.grenades);
+        this.weaponsView.setWeapon(me.weapons[me.active] || me.active);
         this.updateInteractPrompt(me);
+        this.maybeAutoReload(me);
       } else {
         this.hud.hideInteract();
       }
@@ -210,6 +215,19 @@ export class Game {
   }
 
   onSound(msg) {
+    if (msg.type === 'explosion') {
+      this.effects.spawnExplosion(msg.pos);
+      audio.explosion();
+      return;
+    }
+    if (msg.type === 'throw') {
+      if (msg.shooterId !== this.selfId) audio.grenadeThrow();
+      return;
+    }
+    if (msg.type === 'smoke_pop') {
+      audio.smokePop();
+      return;
+    }
     if (msg.type !== 'gunshot' || msg.shooterId === this.selfId) return;
     const me = this.players.get(this.selfId);
     if (me) {
@@ -228,9 +246,20 @@ export class Game {
     if (msg.state === 'defused' && prevState !== 'defused') audio.defused();
   }
 
+  // Auto-reload the active weapon the moment its mag runs dry, instead of
+  // requiring a manual R press -- switching weapons still cancels it
+  // (handleSwitchWeapon resets `reloading` server-side), so it never blocks
+  // a quick weapon swap.
+  maybeAutoReload(me) {
+    const weapon = me.weapons[me.active] && getWeapon(me.weapons[me.active]);
+    if (!weapon || weapon.class === 'melee' || !me.ammo) return;
+    if (me.reloading || me.ammo.mag > 0 || me.ammo.reserve <= 0) return;
+    net.send(C2S.RELOAD);
+  }
+
   onEconomy(msg) {
     this.buyMenu.setCredits(msg.credits);
-    this.buyMenu.setOwned(msg.weapons, msg.armorType);
+    this.buyMenu.setOwned(msg.weapons, msg.armorType, msg.boughtThisBuy, msg.grenades);
   }
 
   // ---- Objective interaction ----
@@ -299,6 +328,14 @@ export class Game {
     if (!me || !me.alive) return;
     if (this.latestRound?.phase !== ROUND_PHASE.COMBAT && this.latestRound?.phase !== ROUND_PHASE.POST_PLANT) {
       this.controller.consumeFireEdge();
+      return;
+    }
+    if (GRENADES[me.active]) {
+      const wantsThrow = this.controller.consumeFireEdge();
+      if (!wantsThrow || !(me.grenades?.[me.active] > 0)) return;
+      net.send(C2S.FIRE);
+      this.weaponsView.playFire();
+      audio.meleeSwing(); // reuse the swing cue as a throw motion sound until a dedicated one exists
       return;
     }
     const weaponId = me.weapons[me.active];
@@ -377,6 +414,7 @@ export class Game {
     this.remotePlayers?.update(dt);
     this.effects.update(dt);
     this.coreView.update(this.latestCore, this.players, this.selfId, this.controller.moveState?.pos, dt);
+    this.grenadeView.update(this.latestGrenades, dt);
 
     this.composer.render();
     requestAnimationFrame((t2) => this.loop(t2));

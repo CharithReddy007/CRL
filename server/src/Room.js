@@ -122,6 +122,9 @@ export class Room {
       case C2S.BUY:
         if (this.match) this.match.handleBuy(conn.id, msg.slot, msg.itemId);
         break;
+      case C2S.SELL:
+        if (this.match) this.match.handleSell(conn.id, msg.slot);
+        break;
       case C2S.SPECTATE_TARGET:
         if (this.match) this.match.handleSpectateTarget(conn.id, msg.targetId);
         break;

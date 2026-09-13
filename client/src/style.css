@@ -205,6 +205,14 @@ input, select {
 .buymenu-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
 .buymenu-header h2 { margin: 0; letter-spacing: 0.1em; font-size: 18px; }
 .buymenu-credits { font-family: var(--font-mono); font-size: 20px; color: var(--warn); font-weight: 700; }
+.buymenu-loadout { display: flex; gap: 10px; margin-bottom: 16px; }
+.loadout-slot {
+  flex: 1; display: flex; align-items: center; gap: 8px; border: 1px solid var(--border);
+  padding: 8px 10px; background: rgba(255,255,255,0.03);
+}
+.loadout-slot .ls-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); }
+.loadout-slot .ls-item { flex: 1; font-size: 13px; font-weight: 600; }
+.loadout-slot .ls-sell { padding: 4px 10px; font-size: 11px; }
 .buymenu-cols { display: grid; grid-template-columns: 1fr 200px; gap: 20px; }
 .buy-cat { margin-bottom: 14px; }
 .buy-cat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 6px; }
@@ -216,6 +224,7 @@ input, select {
 .buy-item .bi-name { font-weight: 700; }
 .buy-item .bi-cost { color: var(--warn); font-family: var(--font-mono); }
 .buy-item.owned { border-color: var(--good); }
+.bi-owned { color: var(--good); font-weight: 400; }
 .buymenu-armor .buy-item { width: 100%; margin-bottom: 6px; }
 .buymenu-footer { margin-top: 14px; font-size: 12px; color: var(--text-dim); text-align: center; }
 

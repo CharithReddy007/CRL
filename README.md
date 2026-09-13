@@ -45,8 +45,9 @@ a single deployed server is enough — no separate static host needed.
 | Mouse | Look |
 | Left click | Fire |
 | Right click | Aim down sights |
-| R | Reload |
+| R | Reload (also happens automatically when a magazine runs dry) |
 | 1 / 2 / 3 | Primary / Secondary / Melee |
+| 4 / 5 | Frag grenade / Smoke grenade (left click to throw) |
 | F (hold) | Plant / defuse the Core |
 | C / Shift | Crouch |
 | Space | Jump |

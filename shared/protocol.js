@@ -16,6 +16,7 @@ export const C2S = {
   INTERACT_START: 'interact_start',
   INTERACT_STOP: 'interact_stop',
   BUY: 'buy',
+  SELL: 'sell',
   SPECTATE_TARGET: 'spectate_target',
   CHAT: 'chat',
   LEAVE: 'leave',

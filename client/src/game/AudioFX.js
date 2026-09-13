@@ -66,6 +66,9 @@ export class AudioFX {
   roundLose() { this.tone({ freq: 300, duration: 0.4, type: 'sawtooth', gain: 0.15, glideTo: 150 }); }
   death() { this.noiseBurst({ freq: 300, duration: 0.3, gain: 0.3, decay: 0.25, q: 0.4 }); }
   jump() { this.tone({ freq: 200, duration: 0.05, type: 'sine', gain: 0.05, glideTo: 300 }); }
+  grenadeThrow() { this.tone({ freq: 500, duration: 0.08, type: 'sine', gain: 0.1, glideTo: 350 }); }
+  explosion() { this.noiseBurst({ freq: 180, duration: 0.5, gain: 0.6, decay: 0.4, q: 0.3 }); }
+  smokePop() { this.noiseBurst({ freq: 700, duration: 0.15, gain: 0.25, decay: 0.12, q: 0.6 }); }
 }
 
 export const audio = new AudioFX();

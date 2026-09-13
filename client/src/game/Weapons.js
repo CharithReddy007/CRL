@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { getWeapon, WEAPON_CLASSES } from '@crl/shared';
+import { getWeapon, WEAPON_CLASSES, GRENADES, GRENADE_CLASSES } from '@crl/shared';
 
 const CLASS_PROPORTIONS = {
   [WEAPON_CLASSES.PISTOL]: { body: [0.1, 0.16, 0.32], barrel: [0.05, 0.05, 0.16], scale: 0.85 },
@@ -11,7 +11,21 @@ const CLASS_PROPORTIONS = {
   [WEAPON_CLASSES.MELEE]: { body: [0.05, 0.05, 0.32], barrel: null, scale: 0.8 },
 };
 
+function buildGrenadeViewmodel(grenade) {
+  const group = new THREE.Group();
+  const color = grenade.class === GRENADE_CLASSES.SMOKE ? 0x8a8f94 : 0x3a3f2e;
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.075, 12, 12), new THREE.MeshStandardMaterial({ color, roughness: 0.6, metalness: 0.3 }));
+  group.add(body);
+  const pin = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.06, 0.02), new THREE.MeshStandardMaterial({ color: 0xc9c2b0, metalness: 0.6, roughness: 0.3 }));
+  pin.position.set(0.06, 0.06, 0);
+  group.add(pin);
+  group.scale.setScalar(0.85);
+  group.userData.muzzleZ = -0.1;
+  return group;
+}
+
 function buildViewmodel(weaponId) {
+  if (GRENADES[weaponId]) return buildGrenadeViewmodel(GRENADES[weaponId]);
   const weapon = getWeapon(weaponId);
   const props = CLASS_PROPORTIONS[weapon?.class] || CLASS_PROPORTIONS[WEAPON_CLASSES.RIFLE];
   const group = new THREE.Group();

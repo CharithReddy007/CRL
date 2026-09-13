@@ -1,6 +1,6 @@
 import {
   TICK_RATE, TICK_MS, PLAYER_MAX_HP, PLAYER_HEIGHT, PLAYER_CROUCH_HEIGHT,
-  PLAYER_EYE_HEIGHT, PLAYER_CROUCH_EYE_HEIGHT,
+  PLAYER_EYE_HEIGHT, PLAYER_CROUCH_EYE_HEIGHT, GRAVITY,
   ROUND_TIME_SEC, BUY_TIME_SEC, POST_PLANT_TIME_SEC, ROUND_END_TIME_SEC,
   PLANT_TIME_SEC, DEFUSE_TIME_SEC, ROUNDS_TO_WIN, SIDE_SWAP_ROUND,
   OVERTIME_ROUNDS_TO_WIN, START_CREDITS, MAX_CREDITS, CREDIT_ROUND_WIN,
@@ -8,6 +8,7 @@ import {
   TEAM_A, TEAM_B, ARMOR_LIGHT, ARMOR_HEAVY,
   simulateMove, rayGeometry, rayPlayer,
   getWeapon, computeDamage, DEFAULT_LOADOUT,
+  GRENADES, GRENADE_CLASSES, getGrenade, fragDamageAt,
   ROUND_PHASE, S2C,
 } from '@crl/shared';
 
@@ -57,6 +58,7 @@ export class Match {
     this.phaseEndsAtTick = 0;
     this.tick = 0;
     this.core = { state: 'none', carrierId: null, pos: null, siteId: null };
+    this.grenades = [];
     this.interval = null;
     this.ended = false;
   }
@@ -71,6 +73,8 @@ export class Match {
       weapons: { ...DEFAULT_LOADOUT },
       ammo: {}, active: 'secondary',
       reloading: false, reloadEndTick: 0,
+      boughtThisBuy: { primary: false, secondary: false, armor: false },
+      grenades: { FRAG1: 0, SMOKE1: 0 },
       credits: START_CREDITS,
       kills: 0, deaths: 0, assists: 0,
       lastFireTick: -9999,
@@ -138,6 +142,7 @@ export class Match {
       p.alive = p.connected;
       initAmmo(p);
       p.reloading = false;
+      p.boughtThisBuy = { primary: false, secondary: false, armor: false };
       p.hasCore = false;
       p.interacting = null;
       p.spectating = null;
@@ -162,6 +167,7 @@ export class Match {
     const p = this.players.get(playerId);
     if (!p || !p.alive) return;
     if (this.phase !== ROUND_PHASE.COMBAT && this.phase !== ROUND_PHASE.POST_PLANT) return;
+    if (GRENADES[p.active]) { this.throwGrenade(p); return; }
     const weaponId = p.weapons[p.active];
     if (!weaponId) return;
     const weapon = getWeapon(weaponId);
@@ -181,6 +187,91 @@ export class Match {
       this.resolveShot(p, weapon, origin, dir);
     }
     this.broadcast(S2C.SOUND, { type: 'gunshot', weapon: weaponId, pos: p.pos, shooterId: p.id, id: uidCounter++ });
+  }
+
+  throwGrenade(p) {
+    const cfg = GRENADES[p.active];
+    if (!cfg || !p.grenades[p.active]) return;
+    p.grenades[p.active] -= 1;
+    const eyeY = p.pos[1] + (p.crouched ? PLAYER_CROUCH_EYE_HEIGHT : PLAYER_EYE_HEIGHT);
+    const origin = [p.pos[0], eyeY, p.pos[2]];
+    const cy = Math.cos(p.yaw), sy = Math.sin(p.yaw);
+    const cp = Math.cos(p.pitch), sp = Math.sin(p.pitch);
+    const dir = [-sy * cp, sp, -cy * cp]; // matches THREE camera forward (-Z at yaw=pitch=0)
+    const vel = [dir[0] * cfg.throwSpeed, dir[1] * cfg.throwSpeed + 2.5, dir[2] * cfg.throwSpeed];
+    this.grenades.push({
+      id: uidCounter++, type: p.active, ownerId: p.id,
+      pos: origin.slice(), vel, spawnTick: this.tick, state: 'flying', smokeEndTick: 0,
+    });
+    if (p.grenades[p.active] <= 0 && p.active === cfg.id) {
+      p.active = p.weapons.secondary ? 'secondary' : (p.weapons.primary ? 'primary' : 'melee');
+    }
+    this.broadcast(S2C.SOUND, { type: 'throw', pos: p.pos, shooterId: p.id, id: uidCounter++ });
+  }
+
+  // Simple arc physics: integrate under gravity, and on a wall/ground hit
+  // this tick, stop at the hit point and dampen velocity (no real bounce
+  // normal available from rayGeometry, so this reflects+dampens uniformly --
+  // close enough for a believable "lands and settles" feel).
+  processGrenades() {
+    const dt = TICK_MS / 1000;
+    for (let i = this.grenades.length - 1; i >= 0; i--) {
+      const g = this.grenades[i];
+      const cfg = GRENADES[g.type];
+      if (g.state === 'flying') {
+        g.vel[1] -= GRAVITY * dt;
+        const moveVec = [g.vel[0] * dt, g.vel[1] * dt, g.vel[2] * dt];
+        const dist = Math.hypot(moveVec[0], moveVec[1], moveVec[2]);
+        if (dist > 1e-5) {
+          const dir = [moveVec[0] / dist, moveVec[1] / dist, moveVec[2] / dist];
+          const hit = rayGeometry(g.pos, dir, this.solids, dist);
+          if (hit) {
+            g.pos = [g.pos[0] + dir[0] * hit.t, g.pos[1] + dir[1] * hit.t, g.pos[2] + dir[2] * hit.t];
+            g.vel = [g.vel[0] * -0.35, g.vel[1] * -0.35, g.vel[2] * -0.35];
+          } else {
+            g.pos = [g.pos[0] + moveVec[0], g.pos[1] + moveVec[1], g.pos[2] + moveVec[2]];
+          }
+        }
+        if (Math.hypot(g.vel[0], g.vel[1], g.vel[2]) < 0.6) g.vel = [0, 0, 0];
+
+        const fuseTicks = Math.round((cfg.fuseMs / 1000) * TICK_RATE);
+        if (this.tick - g.spawnTick >= fuseTicks) {
+          this.detonateGrenade(g, cfg);
+          if (cfg.class === GRENADE_CLASSES.FRAG) { this.grenades.splice(i, 1); continue; }
+        }
+      } else if (g.state === 'smoke' && this.tick >= g.smokeEndTick) {
+        this.grenades.splice(i, 1);
+      }
+    }
+  }
+
+  detonateGrenade(g, cfg) {
+    if (cfg.class === GRENADE_CLASSES.FRAG) {
+      const shooter = this.players.get(g.ownerId);
+      for (const target of this.players.values()) {
+        if (!target.alive) continue;
+        const d = Math.hypot(target.pos[0] - g.pos[0], target.pos[1] - g.pos[1], target.pos[2] - g.pos[2]);
+        const dmg = fragDamageAt(cfg, d);
+        if (dmg <= 0) continue;
+        const absorb = target.armorType === 'heavy' ? ARMOR_HEAVY.absorb : target.armorType === 'light' ? ARMOR_LIGHT.absorb : 0;
+        let armorDamage = 0, finalDmg = dmg;
+        if (target.armorValue > 0 && absorb > 0) {
+          armorDamage = Math.min(target.armorValue, dmg * absorb);
+          finalDmg = dmg - armorDamage;
+        }
+        target.armorValue = Math.max(0, target.armorValue - armorDamage);
+        target.hp -= finalDmg;
+        this.broadcast(S2C.DAMAGE, { shooterId: g.ownerId, targetId: target.id, zone: 'body', damage: Math.round(finalDmg), hp: Math.max(0, target.hp) });
+        if (target.hp <= 0) this.killPlayer(target, shooter, 'grenade');
+        else target.lastDamager = { id: g.ownerId, tick: this.tick };
+      }
+      this.broadcast(S2C.SOUND, { type: 'explosion', pos: g.pos, id: uidCounter++ });
+    } else {
+      g.state = 'smoke';
+      g.vel = [0, 0, 0];
+      g.smokeEndTick = this.tick + Math.round((cfg.smokeDurationMs / 1000) * TICK_RATE);
+      this.broadcast(S2C.SOUND, { type: 'smoke_pop', pos: g.pos, id: uidCounter++ });
+    }
   }
 
   aimDirWithSpread(p, weapon) {
@@ -239,7 +330,14 @@ export class Match {
 
   handleSwitchWeapon(playerId, slot) {
     const p = this.players.get(playerId);
-    if (!p || !p.alive || !['primary', 'secondary', 'melee'].includes(slot)) return;
+    if (!p || !p.alive) return;
+    if (GRENADES[slot]) {
+      if (!p.grenades[slot]) return;
+      p.active = slot;
+      p.reloading = false;
+      return;
+    }
+    if (!['primary', 'secondary', 'melee'].includes(slot)) return;
     if (slot !== 'melee' && !p.weapons[slot]) return;
     p.active = slot;
     p.reloading = false;
@@ -270,6 +368,16 @@ export class Match {
   handleBuy(playerId, slot, itemId) {
     const p = this.players.get(playerId);
     if (!p || !p.alive || this.phase !== ROUND_PHASE.BUY) return;
+    if (slot === 'grenade') {
+      const g = getGrenade(itemId);
+      if (!g) return;
+      const owned = p.grenades[itemId] || 0;
+      if (owned >= g.maxCarry || p.credits < g.cost) return;
+      p.credits -= g.cost;
+      p.grenades[itemId] = owned + 1;
+      this.room.sendTo(playerId, S2C.ECONOMY, { credits: p.credits, weapons: p.weapons, armorType: p.armorType, armorValue: p.armorValue, boughtThisBuy: p.boughtThisBuy, grenades: p.grenades });
+      return;
+    }
     if (slot === 'armor') {
       const cfg = itemId === 'heavy' ? ARMOR_HEAVY : ARMOR_LIGHT;
       if (p.credits < cfg.cost) return;
@@ -286,7 +394,35 @@ export class Match {
     } else {
       return;
     }
-    this.room.sendTo(playerId, S2C.ECONOMY, { credits: p.credits, weapons: p.weapons, armorType: p.armorType, armorValue: p.armorValue });
+    p.boughtThisBuy[slot] = true;
+    this.room.sendTo(playerId, S2C.ECONOMY, { credits: p.credits, weapons: p.weapons, armorType: p.armorType, armorValue: p.armorValue, boughtThisBuy: p.boughtThisBuy, grenades: p.grenades });
+  }
+
+  // Refund a purchase made this buy phase (full cost back), letting a
+  // player change their mind before the round starts. Only what was
+  // actually bought this buy phase is sellable -- not the free starting
+  // loadout -- so this can't be farmed for credits.
+  handleSell(playerId, slot) {
+    const p = this.players.get(playerId);
+    if (!p || !p.alive || this.phase !== ROUND_PHASE.BUY || !p.boughtThisBuy[slot]) return;
+    if (slot === 'armor') {
+      if (!p.armorType) return;
+      const cfg = p.armorType === 'heavy' ? ARMOR_HEAVY : ARMOR_LIGHT;
+      p.credits = Math.min(MAX_CREDITS, p.credits + cfg.cost);
+      p.armorType = null;
+      p.armorValue = 0;
+    } else if (slot === 'primary' || slot === 'secondary') {
+      const weapon = getWeapon(p.weapons[slot]);
+      if (!weapon) return;
+      p.credits = Math.min(MAX_CREDITS, p.credits + weapon.cost);
+      p.weapons[slot] = null;
+      p.ammo[slot] = null;
+      if (p.active === slot) p.active = 'melee';
+    } else {
+      return;
+    }
+    p.boughtThisBuy[slot] = false;
+    this.room.sendTo(playerId, S2C.ECONOMY, { credits: p.credits, weapons: p.weapons, armorType: p.armorType, armorValue: p.armorValue, boughtThisBuy: p.boughtThisBuy, grenades: p.grenades });
   }
 
   handleSpectateTarget(playerId, targetId) {
@@ -339,6 +475,7 @@ export class Match {
       this.processReloads();
       this.processCorePickup();
       this.processInteractions();
+      this.processGrenades();
     }
     if (this.phase === ROUND_PHASE.BUY && this.tick >= this.phaseEndsAtTick) {
       this.phase = ROUND_PHASE.COMBAT;
@@ -530,8 +667,9 @@ export class Match {
         crouched: p.crouched, active: p.active, weapons: p.weapons,
         ammo: p.ammo[p.active] || null, reloading: p.reloading, hasCore: p.hasCore,
         kills: p.kills, deaths: p.deaths, assists: p.assists, credits: p.credits,
-        spectating: p.spectating,
+        spectating: p.spectating, boughtThisBuy: p.boughtThisBuy, grenades: p.grenades,
       })),
+      grenades: this.grenades.map(g => ({ id: g.id, type: g.type, ownerId: g.ownerId, pos: g.pos, state: g.state })),
     };
   }
 
